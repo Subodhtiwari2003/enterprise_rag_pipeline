@@ -1,0 +1,12 @@
+langchain
+sentence-transformers
+langchain-community
+faiss-cpu
+pinecone-client
+python-dotenv
+fastapi
+uvicorn
+langsmith
+sentence-transformers
+google-generativeai
+langchain-google-genai

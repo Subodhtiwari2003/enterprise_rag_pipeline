@@ -2,7 +2,6 @@ import os
 
 # Define project structure
 structure = {
-    "enterprise_rag_pipeline": {
         "data": {
             "hr_docs": {},
             "finance_docs": {}
@@ -18,8 +17,8 @@ structure = {
         "langsmith.json": "",
         ".env": "",
         "requirements.txt": ""
-    }
 }
+
 
 def create_structure(base_path, structure_dict):
     for name, content in structure_dict.items():
