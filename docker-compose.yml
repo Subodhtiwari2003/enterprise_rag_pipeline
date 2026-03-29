@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  enterprise-rag:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+    image: enterprise-rag-pipeline:latest
+    container_name: enterprise-rag-app
+    ports:
+      - "8000:8000"
+    environment:
+      # Add your environment variables here
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      # - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
+      # - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      # - PINECONE_API_KEY=${PINECONE_API_KEY}
+    volumes:
+      # Mount local data directory for development
+      - ./data:/app/data
+      # Optional: mount source code for live reload in development
+      # - ./app:/app/app
+      # - ./rag:/app/rag
+      # - ./agents:/app/agents
+    # Uncomment for production
+    # restart: unless-stopped
+    # networks:
+    #   - rag-network
+    stdin_open: true
+    tty: true
+
+# Uncomment for multi-service setup with database/cache
+# services:
+#   enterprise-rag:
+#     # ... (as above)
+#     depends_on:
+#       - redis
+#       - postgres
+#
+#   redis:
+#     image: redis:7-alpine
+#     ports:
+#       - "6379:6379"
+#
+#   postgres:
+#     image: postgres:15-alpine
+#     environment:
+#       - POSTGRES_USER=rag_user
+#       - POSTGRES_PASSWORD=changeme
+#       - POSTGRES_DB=rag_db
+#     ports:
+#       - "5432:5432"
+#
+# networks:
+#   rag-network:
+#     driver: bridge

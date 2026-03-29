@@ -1,4 +1,4 @@
-from langchain_core.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceEmbeddings
 from app.config import config
 
