@@ -10,3 +10,4 @@ langsmith
 sentence-transformers
 google-generativeai
 langchain-google-genai
+pypdf
