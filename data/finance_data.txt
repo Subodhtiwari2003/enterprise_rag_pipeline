@@ -1,0 +1,375 @@
+"""
+Enterprise RAG Pipeline - Finance Sample Data
+=============================================
+High-quality, realistic Finance domain documents for:
+  • Ingestion into the Finance vector store (FAISS / Pinecone)
+  • LangSmith evaluation datasets
+  • MCP resource endpoint
+
+Topics covered:
+  Revenue Recognition · Expense Management · Capital Expenditure
+  Budget Planning · Tax Compliance · Payroll Finance · Audit
+"""
+
+# Each document has: title, content, source, category, tags
+SAMPLE_FINANCE_DATA = [
+
+    # ── 1. Revenue Recognition ────────────────────────────────────────────────
+    {
+        "title":    "Revenue Recognition Policy (IFRS 15)",
+        "category": "revenue",
+        "tags":     ["ifrs15", "revenue", "recognition", "accounting"],
+        "source":   "Finance Policy Manual v4.2",
+        "content":  """
+Revenue Recognition Policy – Enterprise Finance Guidelines
+
+1. SCOPE
+This policy applies to all revenue-generating activities of the organisation
+and is aligned with IFRS 15 (Revenue from Contracts with Customers).
+
+2. FIVE-STEP MODEL
+The organisation follows the IFRS 15 five-step revenue recognition model:
+  Step 1 – Identify the contract with a customer.
+  Step 2 – Identify the performance obligations in the contract.
+  Step 3 – Determine the transaction price.
+  Step 4 – Allocate the transaction price to the performance obligations.
+  Step 5 – Recognise revenue when (or as) the entity satisfies a performance obligation.
+
+3. TIMING
+Revenue is recognised at the point in time when control of goods or services
+is transferred to the customer. For long-term contracts (>12 months), revenue
+is recognised over time using the percentage-of-completion method.
+
+4. VARIABLE CONSIDERATION
+Variable consideration (e.g. discounts, rebates, penalties) is estimated using
+the expected-value method and included in the transaction price only to the extent
+that it is highly probable that a significant revenue reversal will not occur.
+
+5. CONTRACT MODIFICATIONS
+Modifications to existing contracts are treated as either:
+  (a) A separate contract – if distinct goods/services are added at standalone price.
+  (b) A modification to the existing contract – if goods/services are not distinct.
+
+6. REPORTING
+Monthly revenue reports are submitted to the CFO by the 5th of each following month.
+Quarterly reports are reviewed by the Audit Committee.
+
+7. APPROVAL THRESHOLDS
+  • Revenue adjustments < ₹1 Lakh: Finance Manager approval.
+  • Revenue adjustments ₹1L – ₹10L: CFO approval.
+  • Revenue adjustments > ₹10L: Board Finance Committee approval.
+""".strip()
+    },
+
+    # ── 2. Expense Reimbursement ──────────────────────────────────────────────
+    {
+        "title":    "Employee Expense Reimbursement Policy",
+        "category": "expense",
+        "tags":     ["expense", "reimbursement", "travel", "T&E"],
+        "source":   "HR & Finance Joint Policy v3.1",
+        "content":  """
+Employee Expense Reimbursement Policy
+
+1. ELIGIBILITY
+All full-time and part-time employees are eligible for reimbursement of
+legitimate business expenses incurred in the course of their duties.
+
+2. SUBMISSION PROCESS
+  • Expenses must be submitted via the ERP portal (SAP Concur) within 30 calendar
+    days of the expense being incurred.
+  • Receipts are mandatory for any single expense above ₹500.
+  • Claims submitted after 30 days require CFO approval and are subject to rejection.
+
+3. APPROVED EXPENSE CATEGORIES
+  Category              | Limit per Day (₹) | Approval Required
+  ─────────────────────────────────────────────────────────────
+  Domestic Travel       | 3,000             | Line Manager
+  International Travel  | 10,000            | Department Head
+  Client Entertainment  | 5,000/event       | Director
+  Training & Conference | 25,000/event      | HR + Finance
+  Home Office Supplies  | 2,000/month       | Line Manager
+
+4. NON-REIMBURSABLE EXPENSES
+  • Personal entertainment (movies, spas, personal shopping)
+  • Fines, penalties, or traffic violations
+  • Alcoholic beverages (unless part of client entertainment, see above)
+  • First-class air travel (economy/business class only)
+  • Expenses incurred by family members
+
+5. PAYMENT TIMELINE
+Approved reimbursements are credited to the employee's salary account within
+7 working days of Finance approval.
+
+6. POLICY VIOLATIONS
+Fraudulent or inflated claims will result in disciplinary action up to and
+including termination, and may be referred to law enforcement.
+""".strip()
+    },
+
+    # ── 3. Capital Expenditure ────────────────────────────────────────────────
+    {
+        "title":    "Capital Expenditure (CapEx) Approval Policy",
+        "category": "capex",
+        "tags":     ["capex", "investment", "approval", "procurement"],
+        "source":   "Finance Policy Manual v4.2",
+        "content":  """
+Capital Expenditure Approval Policy
+
+1. DEFINITION
+Capital expenditure (CapEx) refers to funds used to acquire, upgrade, or maintain
+physical assets such as machinery, buildings, technology infrastructure, or vehicles.
+Any asset with an expected useful life > 1 year and cost > ₹10,000 is classified as CapEx.
+
+2. APPROVAL THRESHOLDS
+  Amount                     | Approver
+  ─────────────────────────────────────────────────
+  Up to ₹5 Lakhs             | Department Head
+  ₹5 Lakhs – ₹25 Lakhs       | CFO
+  ₹25 Lakhs – ₹1 Crore       | CEO + CFO
+  Above ₹1 Crore             | Board of Directors
+
+3. BUDGET CYCLE
+CapEx requests must be submitted during the annual budget planning cycle
+(October – November for the following financial year). Mid-year CapEx requests
+require exceptional approval from the CFO and must demonstrate business urgency.
+
+4. BUSINESS CASE REQUIREMENTS
+CapEx proposals above ₹25 Lakhs must include:
+  • ROI calculation (minimum 3-year horizon)
+  • Payback period analysis
+  • Risk assessment
+  • At least 3 vendor quotations
+  • Environmental impact statement (if applicable)
+
+5. DEPRECIATION POLICY
+  Asset Class          | Useful Life | Method
+  ─────────────────────────────────────────────
+  Buildings            | 30 years    | Straight-line
+  Plant & Machinery    | 10 years    | Straight-line
+  IT Equipment         | 3-5 years   | Written-down value
+  Vehicles             | 5 years     | Written-down value
+  Furniture & Fixtures | 10 years    | Straight-line
+
+6. POST-PURCHASE REVIEW
+All CapEx items > ₹10 Lakhs are subject to a post-implementation review
+12 months after purchase to assess actual vs projected ROI.
+""".strip()
+    },
+
+    # ── 4. Budget Planning ────────────────────────────────────────────────────
+    {
+        "title":    "Annual Budget Planning Process",
+        "category": "budget",
+        "tags":     ["budget", "planning", "forecast", "annual"],
+        "source":   "Finance Policy Manual v4.2",
+        "content":  """
+Annual Budget Planning Process
+
+1. TIMELINE
+  Month        | Activity
+  ─────────────────────────────────────────────────────────────
+  August       | Strategic planning sessions with Leadership Team
+  September    | Department heads submit budget proposals
+  October      | Finance consolidates and challenges submissions
+  November     | CFO presents consolidated budget to Board
+  December     | Board approves budget for next Financial Year
+  January      | Approved budget communicated to all departments
+
+2. ZERO-BASED BUDGETING APPROACH
+The organisation follows a zero-based budgeting (ZBB) approach for operational
+expenditure. Each department must justify every line item from scratch each year,
+rather than adjusting the previous year's figures.
+
+3. BUDGET CATEGORIES
+  (a) Opex – Operating Expenditure (salaries, rent, utilities, marketing)
+  (b) CapEx – Capital Expenditure (see CapEx Policy)
+  (c) Reserve – 5% contingency reserve held at corporate level
+
+4. VARIANCE REPORTING
+  • Monthly variance reports (actual vs budget) submitted by the 10th of each month.
+  • Variances > 10% of budget line require written justification to CFO.
+  • Variances > 20% trigger a budget reforecast process.
+
+5. BUDGET TRANSFERS
+  • Transfers within a department (same cost centre): Finance Manager approval.
+  • Transfers between departments: CFO approval.
+  • Transfers from Reserve fund: CEO + CFO approval.
+
+6. TOOLS
+The organisation uses SAP BPC (Business Planning & Consolidation) as the
+primary budgeting tool. All submissions must be entered directly into SAP BPC.
+Excel submissions are not accepted after 2024.
+""".strip()
+    },
+
+    # ── 5. Tax Compliance ─────────────────────────────────────────────────────
+    {
+        "title":    "Corporate Tax Compliance Guidelines (India)",
+        "category": "tax",
+        "tags":     ["tax", "gst", "income-tax", "compliance", "tds"],
+        "source":   "Finance Legal & Compliance v2.0",
+        "content":  """
+Corporate Tax Compliance Guidelines – India Operations
+
+1. INCOME TAX
+  • Corporate tax rate: 22% (Section 115BAA for existing companies).
+  • Advance tax due dates: 15 June (15%), 15 September (45%), 15 December (75%),
+    15 March (100%).
+  • Annual income tax return due by 31 October (audit cases) / 31 July (non-audit).
+
+2. GST (GOODS & SERVICES TAX)
+  • GST registration: mandatory if annual turnover > ₹40 Lakhs (goods) / ₹20 Lakhs (services).
+  • Monthly GSTR-3B filing: due by 20th of the following month.
+  • Annual return (GSTR-9): due by 31 December of the following financial year.
+  • Input Tax Credit (ITC) must be reconciled monthly in GSTR-2B.
+
+3. TDS (TAX DEDUCTED AT SOURCE)
+  • TDS deducted on vendor payments as per applicable rates.
+  • TDS returns (Form 24Q/26Q): quarterly, due within 31 days of quarter end.
+  • TDS certificates (Form 16/16A) issued within 15 days of return filing.
+  Common TDS rates:
+    Section 194C (Contractors): 1% (individual) / 2% (others)
+    Section 194J (Professional fees): 10%
+    Section 194I (Rent): 10% (land/building), 2% (plant/machinery)
+
+4. TRANSFER PRICING
+  Transactions with associated enterprises (group companies) must be conducted
+  at arm's length and documented in a Transfer Pricing study. Mandatory filing
+  of Form 3CEB if international transactions > ₹1 Crore.
+
+5. KEY CONTACTS
+  • Tax queries: tax-compliance@company.com
+  • GST portal access: finance-gst@company.com
+  • Statutory auditor: [Auditor firm name] – 011-XXXX-XXXX
+""".strip()
+    },
+
+    # ── 6. Payroll Finance ────────────────────────────────────────────────────
+    {
+        "title":    "Payroll Processing & Finance Reconciliation",
+        "category": "payroll",
+        "tags":     ["payroll", "salary", "pf", "esi", "deductions"],
+        "source":   "HR-Finance SOP v1.5",
+        "content":  """
+Payroll Processing & Finance Reconciliation
+
+1. PAYROLL CYCLE
+  • Cut-off date: 25th of every month (attendance & leave data locked).
+  • Payroll processing: 26th – 28th.
+  • Salary credit: Last working day of the month.
+  • Payslips available on Employee Self-Service portal by the 1st of following month.
+
+2. STATUTORY DEDUCTIONS
+  Deduction         | Employee | Employer | Basis
+  ──────────────────────────────────────────────────────────────────────
+  Provident Fund    | 12% of Basic | 12% of Basic | Employees earning ≤ ₹15,000 basic (mandatory)
+  ESI               | 0.75%   | 3.25%    | Employees earning ≤ ₹21,000 gross
+  Professional Tax  | Varies  | NIL      | State-specific slabs
+  TDS (Income Tax)  | As per slab | NIL  | Annual salary projection
+
+3. PAYROLL RECONCILIATION
+  Finance reconciles payroll accounts monthly:
+  (a) Payroll Control Account vs Bank Statement.
+  (b) PF/ESI liability account vs statutory challans paid.
+  (c) TDS payable vs Form 26AS data.
+
+4. VARIABLE PAY
+  • Performance bonuses are processed in April (post annual review).
+  • Sales incentives are processed monthly alongside regular payroll.
+  • Festival advances must be approved by HR and Finance before disbursement.
+
+5. CORRECTIONS
+  Short-payments are adjusted in the next payroll cycle.
+  Over-payments are recovered in 3 equal installments unless employee consents to single deduction.
+
+6. RECORD RETENTION
+  Payroll records must be retained for a minimum of 8 years as per the Payment of
+  Wages Act and Income Tax Act requirements.
+""".strip()
+    },
+
+    # ── 7. Financial Risk ─────────────────────────────────────────────────────
+    {
+        "title":    "Financial Risk Management Framework",
+        "category": "risk",
+        "tags":     ["risk", "treasury", "forex", "liquidity", "hedging"],
+        "source":   "Treasury Policy v1.2",
+        "content":  """
+Financial Risk Management Framework
+
+1. RISK CATEGORIES
+  (a) Market Risk – exposure to adverse movements in FX rates, interest rates.
+  (b) Credit Risk – risk of customer / counterparty default.
+  (c) Liquidity Risk – inability to meet short-term financial obligations.
+  (d) Operational Risk – losses from failed processes, systems, or external events.
+
+2. FOREIGN EXCHANGE RISK
+  • Natural hedging preferred: matching USD receivables with USD payables.
+  • Forward contracts permitted for exposures > USD 100,000 with CFO approval.
+  • Speculative FX positions are strictly prohibited.
+  • Monthly FX exposure report submitted to CFO and Board Treasurer.
+
+3. CREDIT RISK
+  • New customers: credit check mandatory before extending credit > ₹10 Lakhs.
+  • Customer credit limits reviewed annually or upon material change in creditworthiness.
+  • Debtor ageing report reviewed weekly; escalation to CFO for overdue > 90 days.
+  • Provision for bad debts: 50% for >180 days overdue, 100% for >365 days overdue.
+
+4. LIQUIDITY MANAGEMENT
+  • Minimum cash buffer: 3 months of operating expenses maintained at all times.
+  • Short-term investments in Government Securities / AAA-rated FDs only.
+  • Weekly cash flow forecasting mandatory.
+
+5. INSURANCE
+  The organisation maintains the following insurance policies:
+  • Directors & Officers (D&O) Liability
+  • Commercial General Liability
+  • Cyber Risk Insurance
+  • Marine Cargo Insurance (for goods in transit)
+  Policy schedule reviewed annually by Risk Committee.
+""".strip()
+    },
+]
+
+
+# ──────────────────────────────────────────────
+# QA PAIRS  (for LangSmith evaluation datasets)
+# ──────────────────────────────────────────────
+
+FINANCE_QA_PAIRS = [
+    {
+        "question": "What approval is needed for a CapEx of ₹30 Lakhs?",
+        "answer":   "A CapEx of ₹30 Lakhs requires approval from both the CEO and CFO.",
+        "category": "capex"
+    },
+    {
+        "question": "When must expense claims be submitted?",
+        "answer":   "Expense claims must be submitted within 30 calendar days of the expense being incurred.",
+        "category": "expense"
+    },
+    {
+        "question": "What is the corporate income tax rate under Section 115BAA?",
+        "answer":   "The corporate income tax rate under Section 115BAA is 22%.",
+        "category": "tax"
+    },
+    {
+        "question": "How is revenue recognised for long-term contracts under IFRS 15?",
+        "answer":   "Revenue for long-term contracts (>12 months) is recognised over time using the percentage-of-completion method.",
+        "category": "revenue"
+    },
+    {
+        "question": "What is the minimum cash buffer the organisation must maintain?",
+        "answer":   "The organisation must maintain a minimum cash buffer of 3 months of operating expenses.",
+        "category": "risk"
+    },
+    {
+        "question": "When is salary credited to employees?",
+        "answer":   "Salary is credited on the last working day of the month.",
+        "category": "payroll"
+    },
+    {
+        "question": "What is the budget tool used by the organisation?",
+        "answer":   "The organisation uses SAP BPC (Business Planning & Consolidation) as the primary budgeting tool.",
+        "category": "budget"
+    },
+]

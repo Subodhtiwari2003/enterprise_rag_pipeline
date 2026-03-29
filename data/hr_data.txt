@@ -1,0 +1,470 @@
+"""
+Enterprise RAG Pipeline - HR Sample Data
+=========================================
+High-quality, realistic HR domain documents for:
+  • Ingestion into the HR vector store (FAISS / Pinecone)
+  • LangSmith evaluation datasets
+  • MCP resource endpoint
+
+Topics covered:
+  Leave Policy · Performance Management · Onboarding · Payroll Overview
+  Grievance Redressal · POSH Compliance · Benefits · Code of Conduct
+"""
+
+SAMPLE_HR_DATA = [
+
+    # ── 1. Leave Policy ───────────────────────────────────────────────────────
+    {
+        "title":    "Leave Policy",
+        "category": "leave",
+        "tags":     ["leave", "pto", "annual", "sick", "maternity", "paternity"],
+        "source":   "HR Policy Handbook v5.0",
+        "content":  """
+Leave Policy
+
+1. EARNED LEAVE (EL)
+  • Entitlement: 21 working days per calendar year.
+  • Accrual: 1.75 days per month; unused EL carries forward up to a maximum of 60 days.
+  • Leave encashment: Allowed at the time of resignation/retirement (max 30 days per year).
+  • Application: Must be applied at least 3 working days in advance via the HRMS portal.
+
+2. SICK LEAVE (SL)
+  • Entitlement: 12 days per calendar year (non-encashable, non-carryforward).
+  • Medical certificate mandatory if sick leave exceeds 3 consecutive days.
+  • Sick leave during probation: 6 days per year.
+
+3. CASUAL LEAVE (CL)
+  • Entitlement: 8 days per calendar year (non-encashable, non-carryforward).
+  • Maximum 3 consecutive casual leaves allowed at one time.
+
+4. MATERNITY LEAVE
+  • Entitlement: 26 weeks for the first two children; 12 weeks thereafter.
+  • Application: Minimum 8 weeks before expected delivery date.
+  • Adoption: 12 weeks from date of adoption (for children under 3 months).
+  • Commissioning mother: 12 weeks from the date the child is handed over.
+  • Full salary paid during maternity leave as per the Maternity Benefit Act 1961.
+
+5. PATERNITY LEAVE
+  • Entitlement: 15 calendar days within 6 months of child's birth/adoption.
+  • Applicable for up to 2 children.
+
+6. BEREAVEMENT LEAVE
+  • Immediate family (spouse, parent, child, sibling): 5 working days.
+  • Extended family (in-laws, grandparents): 3 working days.
+  • No carry-forward or encashment.
+
+7. MARRIAGE LEAVE
+  • 5 working days, once in an employee's service period.
+  • Must be combined with annual leave if more time is required.
+
+8. STUDY / EXAM LEAVE
+  • Up to 10 days per year for approved professional certifications.
+  • Requires prior approval from HR and Department Head.
+
+9. WORK FROM HOME (WFH)
+  • Eligible roles: As listed in the WFH-eligible role matrix maintained by HR.
+  • Maximum WFH days: 3 days per week (subject to manager approval).
+  • WFH not treated as leave but must be logged in HRMS.
+
+10. PUBLIC HOLIDAYS
+  • 14 national and regional public holidays per year.
+  • Holiday list published by HR by 31 December for the following year.
+  • Optional holidays: Employees may choose 2 optional holidays from the approved list.
+""".strip()
+    },
+
+    # ── 2. Performance Management ─────────────────────────────────────────────
+    {
+        "title":    "Performance Management System",
+        "category": "performance",
+        "tags":     ["appraisal", "performance", "review", "KPI", "OKR"],
+        "source":   "HR Policy Handbook v5.0",
+        "content":  """
+Performance Management System
+
+1. PERFORMANCE CYCLE
+  • Annual review period: January – December.
+  • Mid-year review: September (progress check, no rating change).
+  • Annual appraisal: February – March of the following year.
+  • Appraisal results communicated by 31 March; salary revisions effective 1 April.
+
+2. GOAL SETTING
+  • Goals set using the OKR (Objectives & Key Results) framework.
+  • Employee and manager agree on 3–5 OKRs at the start of each year.
+  • OKRs entered into the HRMS by 31 January each year.
+  • Goals must be SMART: Specific, Measurable, Achievable, Relevant, Time-bound.
+
+3. RATING SCALE
+  Rating | Description
+  ──────────────────────────────────────────────
+  5      | Exceptional – Significantly exceeded all goals
+  4      | Exceeds Expectations – Exceeded most goals
+  3      | Meets Expectations – Achieved all agreed goals
+  2      | Needs Improvement – Partially met goals
+  1      | Unsatisfactory – Failed to meet most goals
+
+4. BELL CURVE DISTRIBUTION (Guideline)
+  Rating 5: Maximum 10% of team
+  Rating 4: 20–25% of team
+  Rating 3: 55–60% of team
+  Rating 2: 10–15% of team
+  Rating 1: Maximum 5% of team
+
+5. SALARY REVISION
+  Rating 5: 15–20% increment
+  Rating 4: 10–15% increment
+  Rating 3: 7–10% increment
+  Rating 2: 3–5% increment (with a PIP)
+  Rating 1: 0% increment + mandatory PIP
+
+6. PERFORMANCE IMPROVEMENT PLAN (PIP)
+  • Triggered for employees with Rating 1 or 2 for two consecutive years.
+  • PIP duration: 90 days.
+  • PIP objectives and milestones agreed between employee, manager, and HR.
+  • Failure to meet PIP targets may result in termination.
+
+7. FEEDBACK CULTURE
+  • 360-degree feedback collected annually (peers, subordinates, manager).
+  • Continuous feedback encouraged via the HRMS recognition module.
+  • Managers trained on giving constructive, bias-free feedback.
+""".strip()
+    },
+
+    # ── 3. Onboarding ─────────────────────────────────────────────────────────
+    {
+        "title":    "Employee Onboarding Process",
+        "category": "onboarding",
+        "tags":     ["onboarding", "joining", "induction", "new hire"],
+        "source":   "HR Operations SOP v2.3",
+        "content":  """
+Employee Onboarding Process
+
+1. PRE-JOINING (Before Day 1)
+  • Offer letter sent within 2 working days of verbal acceptance.
+  • Background verification initiated immediately (BGV takes 7–10 days).
+  • Joining kit sent via email: IT setup guide, document checklist, first-day schedule.
+  • Documents required at joining:
+    - Aadhaar card (mandatory)
+    - PAN card (mandatory for TDS)
+    - Last 3 months' salary slips
+    - Relieving letter from previous employer
+    - Educational certificates
+    - 2 passport-size photographs
+    - Bank account details (salary account)
+
+2. DAY 1 INDUCTION
+  • Welcome session with HR (9:00 AM – 10:00 AM)
+  • IT equipment issued; email and system access provisioned.
+  • ID card and access card issued by Security.
+  • Introduction to the team and workspace tour.
+  • Completion of statutory forms:
+    - Form 11 (PF nomination)
+    - Form 2 (ESI declaration)
+    - Investment declaration form (IT purposes)
+
+3. WEEK 1 – ORIENTATION PROGRAMME
+  Day | Activity
+  ─────────────────────────────────────────────────────────
+  Mon | HR policies, code of conduct, POSH training
+  Tue | Department-specific tools and systems training
+  Wed | Meet key stakeholders (cross-functional introduction)
+  Thu | Product / service overview by Business team
+  Fri | Goal-setting session with reporting manager
+
+4. PROBATION PERIOD
+  • Duration: 6 months for all new hires.
+  • Probation review at 3 months and 6 months.
+  • Confirmation letter issued within 15 days of successful probation completion.
+  • Notice period during probation: 1 month (employee) / 1 month (employer).
+
+5. BUDDY PROGRAMME
+  Each new hire is assigned a buddy from the same department for the first 90 days.
+  Buddy's role: informal guide, not performance evaluator.
+
+6. PROBATION EXIT (if not confirmed)
+  • Written notice from HR minimum 15 days before probation end date.
+  • Final dues settled within 7 working days of last working day.
+""".strip()
+    },
+
+    # ── 4. Grievance Redressal ────────────────────────────────────────────────
+    {
+        "title":    "Grievance Redressal Policy",
+        "category": "grievance",
+        "tags":     ["grievance", "complaint", "escalation", "workplace"],
+        "source":   "HR Policy Handbook v5.0",
+        "content":  """
+Grievance Redressal Policy
+
+1. PURPOSE
+To provide a fair, transparent, and timely mechanism for employees to raise
+workplace concerns without fear of retaliation.
+
+2. TYPES OF GRIEVANCES
+  (a) Individual grievances: Salary errors, leave disputes, unfair treatment.
+  (b) Workplace harassment (non-sexual): Bullying, discrimination.
+  (c) Policy violations by management.
+  Note: Sexual harassment complaints are handled under the POSH Policy (separate).
+
+3. GRIEVANCE SUBMISSION
+  Employees may raise grievances via:
+  • HRMS grievance module (preferred).
+  • Email to hr-grievance@company.com.
+  • Sealed physical letter to the HR Head.
+  Anonymous grievances are accepted but limit the depth of investigation.
+
+4. RESOLUTION TIMELINE
+  Step | Who handles                | Timeline
+  ────────────────────────────────────────────────────────────
+  1    | Reporting Manager          | 5 working days
+  2    | HR Business Partner        | 10 working days
+  3    | HR Head + Functional Head  | 15 working days
+  4    | Employee Relations Panel   | 30 working days
+
+5. INVESTIGATION PROCESS
+  • Grievance acknowledged within 2 working days of receipt.
+  • Investigating officer appointed (neutral party).
+  • Both parties given opportunity to present their case.
+  • Written decision communicated to the employee.
+
+6. APPEALS
+  If not satisfied with the resolution, employees may appeal to the Employee
+  Relations Panel within 10 working days of receiving the decision.
+
+7. ANTI-RETALIATION
+  Any form of retaliation against an employee who raises a bona fide grievance
+  is a disciplinary offence. Report retaliation to HR Head or Ethics Helpline.
+
+8. ETHICS HELPLINE
+  Toll-free: 1800-XXX-XXXX (confidential, operated by third party, 24×7)
+  Email: ethics@company.com
+""".strip()
+    },
+
+    # ── 5. POSH Compliance ────────────────────────────────────────────────────
+    {
+        "title":    "Prevention of Sexual Harassment (POSH) Policy",
+        "category": "compliance",
+        "tags":     ["posh", "harassment", "ic", "compliance", "safety"],
+        "source":   "Legal & Compliance v3.0",
+        "content":  """
+Prevention of Sexual Harassment at Workplace (POSH) Policy
+
+1. LEGAL BASIS
+This policy complies with the Sexual Harassment of Women at Workplace
+(Prevention, Prohibition and Redressal) Act, 2013.
+
+2. SCOPE
+Applies to all employees, contractors, consultants, trainees, and visitors
+at any workplace location including remote work setups.
+
+3. WHAT CONSTITUTES SEXUAL HARASSMENT
+  • Unwelcome physical contact or advances.
+  • Demand or request for sexual favours.
+  • Sexually coloured remarks, jokes, or gestures.
+  • Showing pornography or offensive content.
+  • Any other unwelcome conduct of a sexual nature.
+
+4. INTERNAL COMPLAINTS COMMITTEE (ICC)
+  • Presiding Officer: Senior woman employee (Chairperson).
+  • 2 employees committed to women's causes.
+  • 1 external member from an NGO or legal background.
+  ICC members appointed for 3-year terms, rotated.
+  ICC contact: icc@company.com
+
+5. COMPLAINT PROCESS
+  • Written complaint to ICC within 3 months of incident.
+  • ICC acknowledges within 7 days.
+  • Conciliation option (if requested by complainant).
+  • Formal inquiry completed within 60 days.
+  • Report submitted to employer within 10 days of inquiry completion.
+  • Employer acts on recommendation within 60 days.
+
+6. INTERIM RELIEF (during inquiry)
+  • Transfer of complainant or respondent.
+  • Grant of leave up to 3 months.
+  • Restraining the respondent from supervisory role over complainant.
+
+7. CONFIDENTIALITY
+  All proceedings, names, and evidence are strictly confidential.
+  Breach of confidentiality by any party is a disciplinary offence.
+
+8. MANDATORY TRAINING
+  • POSH awareness training: Mandatory for all employees annually.
+  • ICC member training: Every 2 years.
+  • Non-completion of training flagged in performance review.
+
+9. PENALTIES
+  Based on the severity of misconduct, penalties range from
+  written apology to termination and/or criminal prosecution.
+""".strip()
+    },
+
+    # ── 6. Employee Benefits ──────────────────────────────────────────────────
+    {
+        "title":    "Employee Benefits & Perquisites",
+        "category": "benefits",
+        "tags":     ["benefits", "insurance", "health", "perks", "wellness"],
+        "source":   "HR Policy Handbook v5.0",
+        "content":  """
+Employee Benefits & Perquisites
+
+1. HEALTH INSURANCE
+  • Group Mediclaim: ₹5 Lakhs per family per year (employee + spouse + 2 children).
+  • Parents: Optional top-up available; 50% premium shared with company.
+  • Pre-existing conditions: Covered after 1-year waiting period.
+  • Cashless hospitals: Network of 7,000+ hospitals across India.
+  • Dental and vision: Covered up to ₹10,000 per year (reimbursement basis).
+
+2. LIFE INSURANCE
+  • Group Term Life Insurance: 3× annual CTC.
+  • Personal Accident Insurance: 5× annual CTC.
+  • Both policies active from Day 1 of joining.
+
+3. PROVIDENT FUND
+  • Employer PF contribution: 12% of basic salary.
+  • VPF (Voluntary Provident Fund): Employee may contribute above 12%.
+  • PF withdrawal: After 5 years of continuous service (tax-free).
+
+4. GRATUITY
+  • Applicable after 5 years of continuous service.
+  • Formula: (Last drawn basic salary × 15/26) × years of service.
+  • Funded through a gratuity trust managed by LIC.
+
+5. NATIONAL PENSION SCHEME (NPS)
+  • Company contributes 10% of basic salary to NPS (for opted-in employees).
+  • Tax benefit: Additional ₹50,000 deduction under Section 80CCD(1B).
+
+6. EDUCATION ASSISTANCE
+  • Up to ₹50,000 per year for job-relevant courses (post-graduation, certifications).
+  • Requires bond: 1 year of service post-completion for every ₹25,000 spent.
+
+7. WELLNESS BENEFITS
+  • Annual health check-up: Sponsored by company (once per year).
+  • Gym membership: ₹5,000 annual subsidy.
+  • Mental health support: 10 free sessions per year with certified therapists (via EAP).
+  • Employee Assistance Programme (EAP): 24×7 helpline for personal/financial counselling.
+
+8. FOOD & TRANSPORT
+  • Meal allowance: ₹2,200 per month (tax-exempt under Section 17).
+  • Transport allowance: ₹1,600 per month.
+  • Cab service: Available for employees working beyond 9 PM.
+
+9. MOBILE & INTERNET REIMBURSEMENT
+  • Executive level and above: ₹2,000 per month.
+  • Manager level: ₹1,500 per month.
+  • Individual contributor: ₹1,000 per month.
+""".strip()
+    },
+
+    # ── 7. Code of Conduct ────────────────────────────────────────────────────
+    {
+        "title":    "Employee Code of Conduct",
+        "category": "compliance",
+        "tags":     ["code-of-conduct", "ethics", "discipline", "behaviour"],
+        "source":   "HR Policy Handbook v5.0",
+        "content":  """
+Employee Code of Conduct
+
+1. GENERAL PRINCIPLES
+  All employees are expected to:
+  • Act with integrity and honesty in all business dealings.
+  • Treat colleagues, customers, and partners with respect and dignity.
+  • Protect the confidentiality of company information.
+  • Avoid conflicts of interest.
+  • Comply with all applicable laws, regulations, and company policies.
+
+2. CONFLICTS OF INTEREST
+  Employees must disclose any personal or financial interest that may conflict with
+  their duties. This includes:
+  • Ownership stake in a competitor or supplier.
+  • Employment of family members in competing businesses.
+  • Receipt of gifts > ₹3,000 from vendors/clients (must be declared to HR).
+
+3. CONFIDENTIALITY & DATA PRIVACY
+  • Company data, client data, and trade secrets must not be shared outside the
+    organisation without written authorisation.
+  • Employees who resign or are terminated must return all company data and devices
+    on or before the last working day.
+  • Violation of data privacy policies may result in immediate termination and
+    legal action under the IT Act 2000.
+
+4. SOCIAL MEDIA
+  • Employees must not post content that could embarrass the company, disclose
+    confidential information, or make misleading claims about the company.
+  • Personal opinions expressed on social media must be clearly identified as personal.
+  • Employees who are official spokespersons must follow the Communications Policy.
+
+5. DISCIPLINE & MISCONDUCT
+  Minor misconduct (verbal warning → written warning):
+  • Repeated tardiness or unexplained absence.
+  • Casual dress violation.
+  • Minor policy breaches.
+  Major misconduct (suspension → termination):
+  • Theft or fraud.
+  • Violence or threats in the workplace.
+  • Serious data breach.
+  • Discrimination or harassment.
+
+6. DISCIPLINARY PROCESS
+  (a) Show-cause notice issued.
+  (b) Employee given 5 working days to respond.
+  (c) Enquiry conducted by HR.
+  (d) Decision communicated in writing.
+  (e) Right of appeal within 10 working days.
+
+7. WHISTLEBLOWER PROTECTION
+  Employees who report genuine misconduct in good faith are protected from
+  retaliation under the Whistleblower Protection Act 2014.
+  Ethics helpline: 1800-XXX-XXXX | ethics@company.com
+""".strip()
+    },
+]
+
+
+# ──────────────────────────────────────────────
+# QA PAIRS  (for LangSmith evaluation datasets)
+# ──────────────────────────────────────────────
+
+HR_QA_PAIRS = [
+    {
+        "question": "How many earned leave days are employees entitled to per year?",
+        "answer":   "Employees are entitled to 21 working days of earned leave per calendar year.",
+        "category": "leave"
+    },
+    {
+        "question": "How long is the maternity leave entitlement for a first child?",
+        "answer":   "Maternity leave entitlement for the first child is 26 weeks.",
+        "category": "leave"
+    },
+    {
+        "question": "When are annual appraisal results communicated?",
+        "answer":   "Annual appraisal results are communicated by 31 March, with salary revisions effective from 1 April.",
+        "category": "performance"
+    },
+    {
+        "question": "What salary increment does a Rating 5 employee receive?",
+        "answer":   "A Rating 5 employee receives a 15–20% salary increment.",
+        "category": "performance"
+    },
+    {
+        "question": "What is the health insurance cover for employees?",
+        "answer":   "Employees receive a group mediclaim cover of ₹5 Lakhs per family per year.",
+        "category": "benefits"
+    },
+    {
+        "question": "How do I file a POSH complaint?",
+        "answer":   "A written complaint should be submitted to the ICC within 3 months of the incident via email to icc@company.com or through the HRMS.",
+        "category": "compliance"
+    },
+    {
+        "question": "How long is the probation period for new hires?",
+        "answer":   "The probation period is 6 months for all new hires.",
+        "category": "onboarding"
+    },
+    {
+        "question": "What is the maximum gift value an employee can accept from a vendor?",
+        "answer":   "Employees may accept gifts up to ₹3,000 from vendors or clients; amounts above this must be declared to HR.",
+        "category": "compliance"
+    },
+]
