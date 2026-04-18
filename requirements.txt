@@ -9,8 +9,7 @@ langchain-core==0.3.58
 langchain-community==0.3.23
 langchain-google-genai==2.1.4
 
-# Google Gemini (LLM + embeddings — no local model downloaded)
-google-generativeai==0.8.5
+# Google Gemini (LLM + embeddings — provided by langchain-google-genai)
 
 # LangSmith tracing
 langsmith==0.3.43
