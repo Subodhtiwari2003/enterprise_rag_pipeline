@@ -1,51 +1,48 @@
-# Multi-stage build for enterprise RAG pipeline
-FROM python:3.11-slim as builder
+# ── Stage 1: Build dependencies ──────────────────────────────────────────────
+FROM python:3.11-slim AS builder
 
 WORKDIR /build
 
-# Install build dependencies
+# Install only what's needed to compile packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
+
+# Install pinned versions ignoring dependency conflicts, then reinstall uvicorn with deps
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir --no-deps --prefix=/install -r requirements.txt && \
+    pip install --no-cache-dir --prefix=/install "uvicorn==0.34.0"
 
 
-# Production stage
-FROM python:3.11-slim
+# ── Stage 2: Runtime image ────────────────────────────────────────────────────
+FROM python:3.11-slim AS runtime
 
 WORKDIR /app
 
-# Install curl for health checks
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Copy installed packages from builder stage
+COPY --from=builder /install /usr/local
 
-# Create non-root user for security
-RUN useradd -m -u 1000 appuser
+# Copy application code (your structure: main.py, api/, core/)
+COPY main.py ./main.py
+COPY api/ ./api/
+COPY core/ ./core/
 
-# Copy only runtime dependencies from builder
-COPY --from=builder /root/.local /home/appuser/.local
+# Create directory for ChromaDB persistence
+RUN mkdir -p /app/chroma_db
 
-# Set environment variables
-ENV PATH=/home/appuser/.local/bin:$PATH \
-    PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
-
-# Copy application code
-COPY --chown=appuser:appuser . .
-
-# Switch to non-root user
+# Non-root user for security
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/docs || exit 1
-
-# Default port for FastAPI/Uvicorn
+# Expose port
 EXPOSE 8000
 
-# Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Health check (make sure you add a /health route in main.py)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+
+# Start FastAPI with uvicorn
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

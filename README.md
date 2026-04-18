@@ -1,371 +1,298 @@
-# Enterprise RAG Pipeline
-
-An intelligent Retrieval-Augmented Generation (RAG) system designed for enterprise applications with advanced routing, guardrails, and observability features.
-
-## Features
-
-- **Smart Routing** - Intelligent query routing to HR, Finance, or RAG pipeline
-- **Input/Output Guardrails** - Validation and safety checks for queries and responses
-- **LangSmith Integration** - Full tracing and monitoring of pipeline execution
-- **MCP Support** - Model Context Protocol integration for external data sources
-- **FastAPI Backend** - Modern, async-ready HTTP API
-- **Multi-Source RAG** - Support for FAISS, Pinecone, and other vector stores
-- **Google Generative AI** - Integration with Google's latest LLM models
-- **Docker Ready** - Production-ready containerization with multi-stage builds
-
-## Architecture
-
-```
-User Query
-    ↓
-Input Guardrails (Validation)
-    ↓
-Router (HR/Finance/RAG)
-    ↓
-    ├→ HR Route → MCP Client → HR Data
-    ├→ Finance Route → MCP Client → Finance Data
-    └→ General Query → RAG Pipeline
-            ↓
-        Retriever (Vector Store)
-            ↓
-        Generator (LLM)
-    ↓
-Output Guardrails (Validation)
-    ↓
-User Response
-```
-
-## Project Structure
-
-```
-enterprise_rag_pipeline/
-├── app/                          # Main application
-│   ├── main.py                  # FastAPI application & entry point
-│   ├── config.py                # Configuration management
-│   └── __init__.py
-├── rag/                         # RAG components
-│   ├── pipeline.py              # RAG orchestration
-│   ├── retriever.py             # Vector store retrieval
-│   └── generator.py             # LLM response generation
-├── agents/                      # Routing agents
-│   └── router.py                # Query routing logic
-├── guardrails/                  # Safety & validation
-│   ├── input_guard.py           # Input validation
-│   └── output_guard.py          # Output validation
-├── observability/               # Monitoring & tracing
-│   └── langsmith.py             # LangSmith integration
-├── mcp/                         # External integrations
-│   ├── client.py                # MCP client
-│   └── server.py                # MCP server
-├── data/                        # Sample data
-│   ├── hr_data.txt
-│   └── finance_data.txt
-├── requirements.txt             # Python dependencies
-├── Dockerfile                   # Container configuration
-├── docker-compose.yml           # Multi-container setup
-├── .dockerignore                # Docker build exclusions
-└── README.md                    # This file
-```
-
-## Installation
-
-### Local Setup
-
-**Prerequisites:**
-- Python 3.11+
-- pip or conda
-- Git
-
-**Steps:**
-
-1. Clone the repository
-```bash
-git clone <repository-url>
-cd enterprise_rag_pipeline
-```
-
-2. Create a virtual environment
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-4. Configure environment variables
-```bash
-cp .env.example .env  # Create from template if available
-```
-
-### Docker Setup
-
-**Prerequisites:**
-- Docker 20.10+
-- Docker Compose 2.0+
-
-**Quick Start:**
-
-```bash
-# Build and run with Docker Compose
-docker-compose up -d
-
-# View logs
-docker-compose logs -f enterprise-rag
-
-# Stop the service
-docker-compose down
-```
-
-**Manual Docker Build:**
-
-```bash
-# Build the image
-docker build -t enterprise-rag-pipeline:latest .
-
-# Run the container
-docker run -p 8000:8000 \
-  -e LANGSMITH_API_KEY=your_key \
-  -e GOOGLE_API_KEY=your_key \
-  -v $(pwd)/data:/app/data \
-  enterprise-rag-pipeline:latest
-```
-
-## Configuration
-
-### Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-# LangSmith Configuration
-LANGSMITH_API_KEY=your_langsmith_api_key
-LANGSMITH_ENDPOINT=https://api.smith.langchain.com
-
-# Google Generative AI
-GOOGLE_API_KEY=your_google_api_key
-
-# Pinecone (optional)
-PINECONE_API_KEY=your_pinecone_api_key
-PINECONE_ENVIRONMENT=your_environment
-
-# Application Settings
-DEBUG=false
-HOST=0.0.0.0
-PORT=8000
-```
-
-### Configuration File
-
-Edit `app/config.py` for advanced settings:
-- Model selection
-- Vector store provider
-- Guardrail thresholds
-- Tracing settings
-
-## Usage
-
-### Local Execution
-
-```bash
-# Activate environment
-source venv/bin/activate  # or: venv\Scripts\activate
-
-# Run the application
-python app/main.py
-```
-
-Interactive prompt:
-```
-Enter query (or 'exit'): Who is the CEO of the company?
-```
-
-### API Usage (with FastAPI)
-
-```bash
-# Start the server
-python -m uvicorn app.main:app --reload --port 8000
-
-# Visit API documentation
-# Swagger UI: http://localhost:8000/docs
-# ReDoc: http://localhost:8000/redoc
-```
-
-**Example API request:**
-```bash
-curl -X POST http://localhost:8000/query \
-  -H "Content-Type: application/json" \
-  -d '{"query": "What is the Q3 revenue?", "user_role": "ANALYST"}'
-```
-
-### Docker Execution
-
-```bash
-# Using docker-compose (recommended for development)
-docker-compose up
-
-# Access API at http://localhost:8000
-# Logs: docker-compose logs -f
-```
-
-## Development
-
-### Running Tests
-
-```bash
-# Install test dependencies
-pip install pytest pytest-cov
-
-# Run tests
-pytest tests/ -v --cov=app
-```
-
-### Code Formatting
-
-```bash
-# Install formatting tools
-pip install black isort flake8
-
-# Format code
-black app/
-isort app/
-
-# Check linting
-flake8 app/
-```
-
-### Adding New Data Sources
-
-1. Create a new module in `data/`
-2. Implement retriever in `rag/retriever.py`
-3. Update routing logic in `agents/router.py`
-4. Add guardrails in `guardrails/`
-
-### Extending the Pipeline
-
-**Adding a new route:**
-```python
-# In agents/router.py
-elif route == "NEW_ROUTE":
-    result = self.mcp.call("get_new_data", {...})
-```
-
-**Adding output validation:**
-```python
-# In guardrails/output_guard.py
-def validate_output(response: str) -> str:
-    # Your validation logic
-    return response
-```
-
-## Observability
-
-### LangSmith Integration
-
-Automatically traces all pipeline operations:
-- Query input/output
-- Retrieval steps
-- Generation process
-- Guardrail checks
-
-View traces at: `https://smith.langchain.com`
-
-## Dependencies
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| langchain | ≥0.1.0 | Core RAG framework |
-| langchain-community | ≥0.0.10 | Community integrations |
-| langchain-core | ≥0.1.0 | Base components |
-| fastapi | ≥0.104.0 | Web framework |
-| uvicorn | ≥0.24.0 | ASGI server |
-| faiss-cpu | ≥1.7.4 | Vector similarity search |
-| pinecone-client | ≥3.0.0 | Vector database |
-| sentence-transformers | ≥2.2.0 | Embeddings |
-| google-generativeai | ≥0.3.0 | Google LLMs |
-| langsmith | ≥0.0.70 | Observability |
-
-Full dependencies in [requirements.txt](requirements.txt)
-
-## Troubleshooting
-
-### Missing langchain-community vectorstores
-
-```bash
-# Clean reinstall
-pip uninstall langchain langchain-community langchain-core -y
-pip cache purge
-pip install -r requirements.txt
-```
-
-### Docker build fails
-
-```bash
-# Clear build cache
-docker system prune -a
-
-# Rebuild
-docker build --no-cache -t enterprise-rag-pipeline:latest .
-```
-
-### Health check failures
-
-Ensure the FastAPI application is running:
-```bash
-curl http://localhost:8000/docs
-```
-
-## Performance Optimization
-
-- **Vector Store**: Use Pinecone for production (vs FAISS for local)
-- **Caching**: Implement Redis for query result caching
-- **Batching**: Process multiple queries in parallel
-- **Model**: Consider lighter models for latency-critical applications
-
-## Security Considerations
-
-- ✅ Non-root container user
-- ✅ Input validation & guardrails
-- ✅ API authentication (add as needed)
-- ✅ Encrypted environment variables
-- ⚠️ TODO: Add rate limiting
-- ⚠️ TODO: Add request signing
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see [LICENSE](LICENSE) file for details.
-
-## Support
-
-For issues, questions, or suggestions:
-- Open an issue on GitHub
-- Check existing documentation
-- Review [LangChain docs](https://python.langchain.com)
-- Check [FastAPI docs](https://fastapi.tiangolo.com)
-
-## Roadmap
-
-- [ ] Add authentication & authorization
-- [ ] Rate limiting & throttling
-- [ ] GraphQL API support
-- [ ] WebSocket support for streaming
-- [ ] Advanced caching strategies
-- [ ] Multi-language support
-- [ ] Kubernetes deployment manifests
-- [ ] Helm charts
+# 🏢 Enterprise RAG Pipeline
+
+> A production-ready, end-to-end Retrieval-Augmented Generation (RAG) system for enterprise HR and Finance domains — built with FastAPI, LangChain, Google Gemini, ChromaDB, LangSmith, and deployed via Docker on Render.
+
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green)
+![LangChain](https://img.shields.io/badge/LangChain-0.3-orange)
+![Docker](https://img.shields.io/badge/Docker-ready-blue)
+![Render](https://img.shields.io/badge/Deployed-Render-purple)
+![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
 ---
 
-**Last Updated:** March 2026
-**Python Version:** 3.11+
-**Status:** 🚀 Production Ready
+## 📌 Overview
+
+This project implements a fully functional, enterprise-grade RAG pipeline designed to answer domain-specific questions grounded in internal knowledge bases — with built-in safety guardrails, observability via LangSmith, and MCP (Model Context Protocol) tool-calling support.
+
+**Supported Domains:**
+- 🧑‍💼 **HR** — Leave policies, performance reviews, onboarding, code of conduct
+- 💰 **Finance** — Expense reimbursement, budget planning, accounts payable, audit & compliance
+
+---
+
+## 🏗️ Architecture
+
+```
+User Query
+    │
+    ▼
+┌─────────────────────────────┐
+│     FastAPI REST API        │  ← /api/v1/query, /retrieve, /mcp/call
+└────────────┬────────────────┘
+             │
+    ┌────────▼────────┐
+    │  Input Guardrail │  ← PII check, injection detection, domain validation
+    └────────┬─────────┘
+             │
+    ┌────────▼──────────────┐
+    │  ChromaDB Retrieval   │  ← Google Embedding API → cosine similarity search
+    │  (HR / Finance)       │
+    └────────┬──────────────┘
+             │
+    ┌────────▼───────────────┐
+    │  Gemini 1.5 Flash LLM  │  ← Domain-specific prompt templates
+    └────────┬───────────────┘
+             │
+    ┌────────▼────────┐
+    │ Output Guardrail │  ← PII leakage check on LLM response
+    └────────┬─────────┘
+             │
+    ┌────────▼──────────┐
+    │  LangSmith Trace   │  ← Full pipeline observability
+    └────────┬───────────┘
+             │
+          Response
+```
+
+---
+
+## ⚙️ Tech Stack
+
+| Component | Technology | Why |
+|---|---|---|
+| **API Framework** | FastAPI | Async, fast, auto-docs |
+| **LLM** | Google Gemini 1.5 Flash | Free tier, fast, capable |
+| **Embeddings** | Google Embedding API | No local model = zero RAM overhead |
+| **Vector DB** | ChromaDB | Free, lightweight, no external service needed |
+| **Orchestration** | LangChain | Chain composition, prompt templates |
+| **Observability** | LangSmith | Full trace monitoring for every LLM call |
+| **Safety** | Custom Guardrails | PII detection, prompt injection, topic blocking |
+| **Tool Calling** | MCP (Model Context Protocol) | Agent-compatible tool definitions |
+| **Deployment** | Docker + Render | Free-tier deployable, <400MB image |
+
+---
+
+## 🗂️ Project Structure
+
+```
+enterprise_rag_pipeline/
+
+├── main.py                  # FastAPI app entry point, lifespan startup
+├── api/
+│   ├── routes.py            # All API endpoints
+│   └── schemas.py           # Pydantic request/response models
+└── core/
+│   ├── config.py            # Environment config & LangSmith setup
+│   ├── vector_store.py      # ChromaDB manager (init, add, query)
+│   ├── ingestion.py         # Domain document chunking & ingestion
+│   ├── rag_pipeline.py      # Full RAG chain with LangSmith tracing
+│   ├── guardrails.py        # Input/output safety checks
+│   └── mcp_tools.py         # MCP tool registry & executor
+├── Dockerfile               # Multi-stage, optimized for 512MB RAM
+├── render.yaml              # Render deployment config
+├── requirements.txt         # Lean dependencies (~380MB total)
+├── .env.example             # Environment variable reference
+├── .gitignore
+└── README.md
+```
+
+---
+
+## 🚀 Quick Start (Local)
+
+### 1. Clone & Setup
+
+```bash
+git clone https://github.com/Subodhtiwari2003/enterprise_rag_pipeline.git
+cd enterprise_rag_pipeline
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 2. Configure Environment
+
+```bash
+cp .env.example .env
+# Edit .env and add your GOOGLE_API_KEY (required)
+# Optionally add LANGCHAIN_API_KEY for LangSmith tracing
+```
+
+### 3. Run
+
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+Open **http://localhost:8000/docs** for the interactive Swagger UI.
+
+---
+
+## 🐳 Docker (Local)
+
+```bash
+# Build
+docker build -t enterprise-rag .
+
+# Run
+docker run -p 8000:8000 \
+  -e GOOGLE_API_KEY=your_key_here \
+  -e LANGCHAIN_API_KEY=your_langsmith_key \
+  enterprise-rag
+```
+
+---
+
+## ☁️ Deploy on Render
+
+### Step-by-step:
+
+1. **Push this repo to GitHub**
+
+2. **Go to [render.com](https://render.com)** → New → Web Service
+
+3. **Connect your GitHub repo**
+
+4. **Settings:**
+   - Runtime: `Docker`
+   - Dockerfile Path: `./Dockerfile`
+   - Plan: `Free`
+
+5. **Add Environment Variables** (under Environment tab):
+   | Key | Value |
+   |-----|-------|
+   | `GOOGLE_API_KEY` | your Google AI Studio key |
+   | `LANGCHAIN_API_KEY` | your LangSmith key (optional) |
+   | `LANGCHAIN_PROJECT` | `enterprise-rag-pipeline` |
+   | `LANGCHAIN_TRACING_V2` | `true` |
+
+6. **Click Deploy** — Render auto-detects `render.yaml`
+
+> 💡 The free tier sleeps after 15 minutes of inactivity. First request after sleep takes ~30s.
+
+---
+
+## 📡 API Endpoints
+
+### `POST /api/v1/query`
+Ask a question against the HR or Finance knowledge base.
+
+```json
+// Request
+{
+  "query": "How many days of annual leave do I get?",
+  "domain": "hr",
+  "top_k": 4
+}
+
+// Response
+{
+  "answer": "As per the Leave Policy, all full-time employees are entitled to 24 days of paid annual leave per year...",
+  "sources": [
+    { "title": "Leave Policy", "domain": "hr", "score": 0.91 }
+  ],
+  "domain": "hr",
+  "blocked": false
+}
+```
+
+### `POST /api/v1/retrieve`
+Get raw document chunks without LLM generation.
+
+```json
+{ "query": "invoice processing steps", "domain": "finance", "top_k": 3 }
+```
+
+### `GET /api/v1/mcp/tools`
+List all available MCP tool definitions for agent integration.
+
+### `POST /api/v1/mcp/call`
+Execute an MCP tool directly.
+
+```json
+{
+  "tool_name": "query_finance_policy",
+  "parameters": { "query": "What are the payment terms for vendors?" }
+}
+```
+
+### `POST /api/v1/guardrail/check`
+Test the guardrail layer against any query.
+
+```json
+{ "query": "My Aadhaar is 1234 5678 9012", "domain": "hr" }
+// → { "passed": false, "reason": "PII detected: aadhaar" }
+```
+
+---
+
+## 🛡️ Guardrail System
+
+The custom guardrail layer runs **zero-dependency** pattern matching — no heavy `guardrails-ai` package required.
+
+| Check | What it catches |
+|---|---|
+| **PII Detection** | Aadhaar, PAN, credit card, email, phone, SSN |
+| **Prompt Injection** | "ignore previous instructions", "act as", "jailbreak", etc. |
+| **Blocked Topics** | Specific salary of named individuals, passwords, personal data requests |
+| **Domain Validation** | Rejects queries for unknown domains |
+| **Query Length** | Rejects empty or excessively long queries |
+| **Output PII Check** | Scans LLM response before returning to user |
+
+---
+
+## 📊 LangSmith Observability
+
+When `LANGCHAIN_API_KEY` is set, every RAG query is traced in LangSmith with:
+- Full input/output for each chain step
+- Retrieval results and scores
+- LLM token usage and latency
+- Guardrail pass/fail events
+
+View traces at: **https://smith.langchain.com**
+
+---
+
+## 🔧 MCP Tool Integration
+
+The pipeline exposes 4 MCP-compatible tools for agent orchestration:
+
+| Tool | Description |
+|---|---|
+| `query_hr_policy` | Full RAG query against HR domain |
+| `query_finance_policy` | Full RAG query against Finance domain |
+| `retrieve_documents` | Raw vector search (no LLM) |
+| `check_query_safety` | Run guardrail checks only |
+
+These follow the MCP spec and can be plugged into any agent framework (LangChain agents, AutoGen, custom orchestrators).
+
+---
+
+## 📦 Why This Stack Fits Render Free Tier
+
+| Library Removed | Replaced With | RAM Saved |
+|---|---|---|
+| `sentence-transformers` | Google Embedding API | ~800MB |
+| `faiss-cpu` | ChromaDB | ~200MB |
+| `pinecone-client` | ChromaDB (free, in-process) | N/A |
+| `guardrails-ai` | Custom regex guardrails | ~150MB |
+| **Total estimated footprint** | | **~350–380MB** ✅ |
+
+---
+
+## 🧑‍💻 Resume Description
+
+> **Enterprise RAG Pipeline** | Python · FastAPI · LangChain · Google Gemini · ChromaDB · LangSmith · Docker · Render
+>
+> - Built end-to-end RAG API for HR and Finance domains with domain-isolated vector retrieval using ChromaDB and Google Embedding API (no local models, fits Render 512MB free tier)
+> - Implemented layered safety guardrails for PII detection (Aadhaar, PAN, credit card), prompt injection blocking, and output sanitization — zero heavy dependencies
+> - Integrated LangSmith tracing for full observability of every LLM call, retrieval step, and guardrail event
+> - Exposed MCP (Model Context Protocol) tool definitions enabling agent-based orchestration
+> - Containerized with multi-stage Docker build and deployed on Render with health checks and auto-restart
+
+---
+
+## 📄 License
+
+MIT © Subodh Tiwari
