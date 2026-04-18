@@ -1,24 +1,25 @@
-# Core LLM & LangChain
+# Web framework — starlette must be explicit (fastapi peer dep)
+fastapi==0.115.12
+starlette==0.46.2
+uvicorn[standard]==0.34.0
+
+# LangChain ecosystem
 langchain==0.3.25
-langchain-google-genai==2.1.4
-langchain-community==0.3.23
 langchain-core==0.3.58
+langchain-community==0.3.23
+langchain-google-genai==2.1.4
+
+# Google Gemini (LLM + embeddings — no local model downloaded)
+google-generativeai==0.8.5
 
 # LangSmith tracing
 langsmith==0.3.43
 
-# Google Gemini (LLM + Embeddings — no local model = ~0MB RAM)
-google-generativeai==0.8.5
-
-# Vector DB — ChromaDB is lightweight & free (replaces pinecone + faiss)
+# Vector DB — lightweight, free, in-process
 chromadb==0.6.3
 
 # PDF parsing (lightweight)
 pypdf==5.4.0
-
-# API server
-fastapi==0.115.12
-uvicorn[standard]==0.34.0
 
 # Utilities
 python-dotenv==1.1.0
