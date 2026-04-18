@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Enterprise RAG — Knowledge Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ── Reset & Base ─────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0d0f14;
+  --bg2:       #13161e;
+  --bg3:       #1a1e2a;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.13);
+  --gold:      #c9a84c;
+  --gold-dim:  rgba(201,168,76,0.15);
+  --gold-glow: rgba(201,168,76,0.08);
+  --text:      #e8e4dc;
+  --text2:     #8b8780;
+  --text3:     #5a5753;
+  --hr-color:  #4a9eff;
+  --hr-dim:    rgba(74,158,255,0.12);
+  --fin-color: #3ecf8e;
+  --fin-dim:   rgba(62,207,142,0.12);
+  --danger:    #ff6b6b;
+  --danger-dim:rgba(255,107,107,0.1);
+  --success:   #3ecf8e;
+  --radius:    10px;
+  --mono:      'DM Mono', monospace;
+  --sans:      'DM Sans', sans-serif;
+  --serif:     'Playfair Display', serif;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── Grid noise texture overlay ──────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Layout ───────────────────────────────────── */
+.shell {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  grid-template-rows: auto 1fr;
+}
+
+/* ── Header ───────────────────────────────────── */
+header {
+  grid-column: 1 / -1;
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(13,15,20,0.85);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-mark {
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid var(--gold);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gold);
+  font-weight: 500;
+  letter-spacing: -0.5px;
+}
+
+.logo-text {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.logo-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-left: 4px;
+  align-self: flex-end;
+  padding-bottom: 2px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  letter-spacing: 0.04em;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text3);
+  transition: background var(--transition);
+}
+.status-dot.live { background: var(--success); box-shadow: 0 0 6px var(--fin-color); }
+.status-dot.error { background: var(--danger); }
+
+.header-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-btn {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.nav-btn:hover { color: var(--text); border-color: var(--border2); }
+.nav-btn.active { color: var(--gold); border-color: var(--gold); background: var(--gold-glow); }
+
+/* ── Sidebar ──────────────────────────────────── */
+aside {
+  border-right: 1px solid var(--border);
+  padding: 28px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--bg2);
+  overflow-y: auto;
+}
+
+.sidebar-section {
+  padding: 0 20px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+.sidebar-section:last-child { border-bottom: none; }
+
+.sidebar-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+/* Domain selector */
+.domain-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.domain-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.domain-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+  transition: opacity var(--transition);
+  opacity: 0;
+}
+.domain-card:hover { border-color: var(--border2); background: rgba(255,255,255,0.02); }
+.domain-card.selected { border-color: transparent; }
+
+.domain-card[data-domain="hr"]::before { background: var(--hr-color); }
+.domain-card[data-domain="finance"]::before { background: var(--fin-color); }
+.domain-card.selected::before { opacity: 1; }
+.domain-card[data-domain="hr"].selected { background: var(--hr-dim); border-color: rgba(74,158,255,0.25); }
+.domain-card[data-domain="finance"].selected { background: var(--fin-dim); border-color: rgba(62,207,142,0.25); }
+
+.domain-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.domain-desc {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  line-height: 1.4;
+}
+
+/* Retrieve toggle */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px;
+}
+.toggle-label {
+  font-size: 12px;
+  color: var(--text2);
+}
+.toggle {
+  position: relative;
+  width: 36px;
+  height: 20px;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  width: 14px; height: 14px;
+  left: 2px; top: 2px;
+  background: var(--text3);
+  border-radius: 50%;
+  transition: all var(--transition);
+}
+.toggle input:checked + .toggle-slider { background: var(--gold-dim); border-color: var(--gold); }
+.toggle input:checked + .toggle-slider::after { transform: translateX(16px); background: var(--gold); }
+
+/* Top-K slider */
+.slider-row {
+  padding: 4px;
+}
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.slider-name { font-size: 12px; color: var(--text2); }
+.slider-val {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--gold);
+}
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--bg3);
+  border-radius: 4px;
+  outline: none;
+  border: 1px solid var(--border);
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--gold);
+  cursor: pointer;
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 6px var(--gold-dim);
+}
+
+/* History */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.history-item {
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all var(--transition);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.history-item:hover { background: var(--bg3); border-color: var(--border); }
+.history-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+.history-dot.hr  { background: var(--hr-color); }
+.history-dot.finance { background: var(--fin-color); }
+.history-q {
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.history-empty {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  padding: 8px 4px;
+  text-align: center;
+}
+
+/* ── Main content ─────────────────────────────── */
+main {
+  padding: 32px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+  max-height: calc(100vh - 60px);
+}
+
+/* ── View panels ──────────────────────────────── */
+.view { display: none; flex-direction: column; gap: 24px; }
+.view.active { display: flex; }
+
+/* ── Query panel ──────────────────────────────── */
+.query-area {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color var(--transition);
+}
+.query-area:focus-within { border-color: var(--border2); }
+
+.query-top {
+  padding: 16px 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.domain-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: all var(--transition);
+}
+.domain-badge.hr { background: var(--hr-dim); color: var(--hr-color); border: 1px solid rgba(74,158,255,0.2); }
+.domain-badge.finance { background: var(--fin-dim); color: var(--fin-color); border: 1px solid rgba(62,207,142,0.2); }
+
+.query-hint { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 0.04em; }
+
+textarea {
+  width: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+  padding: 14px 20px 10px;
+  resize: none;
+  min-height: 90px;
+  caret-color: var(--gold);
+}
+textarea::placeholder { color: var(--text3); }
+
+.query-bottom {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.char-count { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+
+.btn-group { display: flex; gap: 8px; }
+
+.btn {
+  border: 1px solid var(--border2);
+  border-radius: 7px;
+  padding: 8px 18px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.btn-ghost {
+  background: none;
+  color: var(--text2);
+}
+.btn-ghost:hover { background: var(--bg3); color: var(--text); border-color: var(--border2); }
+
+.btn-primary {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #0d0f14;
+  font-weight: 500;
+}
+.btn-primary:hover { background: #d4b060; border-color: #d4b060; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(201,168,76,0.3); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Suggestions */
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.suggestion-label { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; width: 100%; margin-bottom: 4px; }
+.suggestion-chip {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.suggestion-chip:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+
+/* ── Response ─────────────────────────────────── */
+.response-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.response-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.response-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.response-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  display: flex;
+  gap: 16px;
+}
+.response-meta span { color: var(--text2); }
+
+.response-body { padding: 24px 24px 20px; }
+
+.response-answer {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.blocked-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--danger-dim);
+  border: 1px solid rgba(255,107,107,0.2);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.blocked-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.blocked-text { font-size: 13px; color: var(--danger); line-height: 1.5; }
+
+/* Sources */
+.sources-section {
+  padding: 0 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sources-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 4px;
+}
+.source-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  transition: border-color var(--transition);
+}
+.source-chip:hover { border-color: var(--border2); }
+.source-score {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.source-score.high { background: rgba(62,207,142,0.12); color: var(--fin-color); }
+.source-score.mid  { background: rgba(201,168,76,0.12); color: var(--gold); }
+.source-score.low  { background: rgba(255,255,255,0.05); color: var(--text3); }
+.source-info { flex: 1; }
+.source-name { font-size: 12px; color: var(--text); font-weight: 500; }
+.source-domain { font-family: var(--mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* Retrieve panel: raw chunks */
+.chunk-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  animation: slideUp 0.25s ease;
+}
+.chunk-header {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg3);
+}
+.chunk-label { font-family: var(--mono); font-size: 11px; color: var(--text2); }
+.chunk-score { font-family: var(--mono); font-size: 11px; }
+.chunk-body { padding: 14px 16px; font-size: 13px; color: var(--text2); line-height: 1.7; white-space: pre-wrap; }
+
+/* ── Guardrail view ────────────────────────────── */
+.guardrail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.guard-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  transition: border-color var(--transition);
+}
+.guard-card:hover { border-color: var(--border2); }
+.guard-card-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.guard-card-name { font-size: 15px; font-weight: 500; color: var(--text); }
+.guard-card-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+.guard-input-row { display: flex; gap: 8px; }
+.guard-input {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 8px 12px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.guard-input:focus { border-color: var(--border2); }
+.guard-result {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  display: none;
+  animation: slideUp 0.2s ease;
+}
+.guard-result.visible { display: flex; }
+.guard-result.pass { border-color: rgba(62,207,142,0.25); background: var(--fin-dim); color: var(--fin-color); }
+.guard-result.fail { border-color: rgba(255,107,107,0.25); background: var(--danger-dim); color: var(--danger); }
+
+/* ── MCP view ─────────────────────────────────── */
+.mcp-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.mcp-tool {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mcp-tool:hover { border-color: var(--gold); background: var(--gold-glow); }
+.mcp-tool-name { font-family: var(--mono); font-size: 12px; color: var(--gold); }
+.mcp-tool-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+.mcp-params { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+
+.mcp-call-area {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.mcp-call-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.mcp-call-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.mcp-field { display: flex; flex-direction: column; gap: 6px; }
+.mcp-field-label { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; }
+.mcp-select, .mcp-text-input {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.mcp-select:focus, .mcp-text-input:focus { border-color: var(--border2); }
+.mcp-select option { background: var(--bg2); }
+.mcp-result {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 280px;
+  overflow-y: auto;
+  display: none;
+  animation: slideUp 0.2s ease;
+}
+.mcp-result.visible { display: block; }
+
+/* ── Loading spinner ──────────────────────────── */
+.spinner-wrap {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text3);
+}
+.spinner-wrap.visible { display: flex; }
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Empty state ──────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+}
+.empty-icon {
+  width: 52px; height: 52px;
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: var(--text3);
+  background: var(--bg2);
+}
+.empty-title { font-family: var(--serif); font-size: 18px; color: var(--text); }
+.empty-desc { font-size: 13px; color: var(--text3); max-width: 280px; line-height: 1.6; }
+
+/* ── Scrollbar ────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border2); }
+
+/* ── Section title ────────────────────────────── */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.section-title h2 {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+}
+.section-title-bar { flex: 1; height: 1px; background: var(--border); }
+
+/* ── Toast ────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 12px 18px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+  z-index: 999;
+  transform: translateY(60px);
+  opacity: 0;
+  transition: all 0.3s ease;
+  max-width: 280px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ── HEADER ──────────────────────────────── -->
+  <header>
+    <div class="logo">
+      <div class="logo-mark">ER</div>
+      <span class="logo-text">Enterprise RAG</span>
+      <span class="logo-sub">v1.0</span>
+    </div>
+    <div class="header-right">
+      <div class="status-pill">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Connecting...</span>
+      </div>
+      <nav class="header-nav">
+        <button class="nav-btn active" onclick="switchView('query', this)">Query</button>
+        <button class="nav-btn" onclick="switchView('retrieve', this)">Retrieve</button>
+        <button class="nav-btn" onclick="switchView('guardrail', this)">Guardrail</button>
+        <button class="nav-btn" onclick="switchView('mcp', this)">MCP Tools</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ── SIDEBAR ─────────────────────────────── -->
+  <aside>
+    <!-- Domain -->
+    <div class="sidebar-section" style="padding-top:0">
+      <div class="sidebar-label">Knowledge Domain</div>
+      <div class="domain-cards">
+        <div class="domain-card selected" data-domain="hr" onclick="selectDomain('hr', this)">
+          <div class="domain-name">Human Resources</div>
+          <div class="domain-desc">Leave · Performance · Onboarding · Conduct</div>
+        </div>
+        <div class="domain-card" data-domain="finance" onclick="selectDomain('finance', this)">
+          <div class="domain-name">Finance</div>
+          <div class="domain-desc">Expenses · Budget · Payable · Audit</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Options -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Options</div>
+
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-name">Top-K results</span>
+          <span class="slider-val" id="topkVal">4</span>
+        </div>
+        <input type="range" id="topkSlider" min="1" max="8" value="4"
+          oninput="document.getElementById('topkVal').textContent = this.value">
+      </div>
+
+      <div class="toggle-row" style="margin-top:12px">
+        <span class="toggle-label">Raw mode (no LLM)</span>
+        <label class="toggle">
+          <input type="checkbox" id="rawModeToggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Recent Queries</div>
+      <div class="history-list" id="historyList">
+        <div class="history-empty" id="historyEmpty">No queries yet</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ────────────────────────────────── -->
+  <main>
+
+    <!-- QUERY VIEW -->
+    <div class="view active" id="view-query">
+
+      <div class="section-title">
+        <h2>Ask the Knowledge Base</h2>
+        <div class="section-title-bar"></div>
+      </div>
+
+      <!-- Query input -->
+      <div class="query-area">
+        <div class="query-top">
+          <div class="domain-badge hr" id="activeBadge">HR</div>
+          <span class="query-hint">Ctrl+Enter to submit</span>
+        </div>
+        <textarea
+          id="queryInput"
+          placeholder="Ask anything about HR policies or Finance processes…"
+          maxlength="1000"
+          onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter')submitQuery()"
+          oninput="document.getElementById('charCount').textContent=this.value.length+'/1000'"
+        ></textarea>
+        <div class="query-bottom">
+          <span class="char-count" id="charCount">0/1000</span>
+          <div class="btn-group">
+            <button class="btn btn-ghost" onclick="clearQuery()">Clear</button>
+            <button class="btn btn-primary" id="submitBtn" onclick="submitQuery()">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M1 6h10M7 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Submit
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Suggestions -->
+      <div class="suggestions" id="suggestions">
+        <div class="suggestion-label">Try asking</div>
+      </div>
+
+      <!-- Loading -->
+      <div class="spinner-wrap" id="querySpinner">
+        <div class="spinner"></div>
+        Retrieving and generating response…
+      </div>
+
+      <!-- Response -->
+      <div id="responseArea"></div>
+
+    </div>
+
+    <!-- RETRIEVE VIEW -->
+    <div class="view" id="view-retrieve">
+      <div class="section-title">
+        <h2>Raw Document Retrieval</h2>
+        <div class="section-title-bar"></div>
+      </div>
+
+      <div class="query-area">
+        <div class="query-top">
+          <div class="domain-badge hr" id="retrieveBadge">HR</div>
+          <span class="query-hint">Semantic search — no LLM generation</span>
+        </div>
+        <textarea
+          id="retrieveInput"
+          placeholder="Search for relevant document chunks…"
+          onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter')submitRetrieve()"
+          style="min-height:70px"
+        ></textarea>
+        <div class="query-bottom">
+          <span></span>
+          <button class="btn btn-primary" onclick="submitRetrieve()">Search Chunks</button>
+        </div>
+      </div>
+
+      <div class="spinner-wrap" id="retrieveSpinner">
+        <div class="spinner"></div>
+        Searching vector store…
+      </div>
+
+      <div id="retrieveArea"></div>
+    </div>
+
+    <!-- GUARDRAIL VIEW -->
+    <div class="view" id="view-guardrail">
+      <div class="section-title">
+        <h2>Safety Guardrail Tester</h2>
+        <div class="section-title-bar"></div>
+      </div>
+
+      <div class="guardrail-grid">
+        <div class="guard-card" onclick="">
+          <div class="guard-card-title">PII Detection</div>
+          <div class="guard-card-name">Personal Data Check</div>
+          <div class="guard-card-desc">Detects Aadhaar, PAN, credit cards, phone numbers, email addresses in queries.</div>
+          <div class="guard-input-row">
+            <input class="guard-input" id="pii-input" placeholder="My Aadhaar is 2345 6789 0123" onkeydown="if(event.key==='Enter')testGuard('pii-input','pii-result','hr')"/>
+            <button class="btn btn-ghost" style="padding:8px 12px;font-size:11px" onclick="testGuard('pii-input','pii-result','hr')">Test</button>
+          </div>
+          <div class="guard-result" id="pii-result"></div>
+        </div>
+
+        <div class="guard-card">
+          <div class="guard-card-title">Injection Detection</div>
+          <div class="guard-card-name">Prompt Injection Check</div>
+          <div class="guard-card-desc">Catches "ignore previous instructions", jailbreak attempts, and system overrides.</div>
+          <div class="guard-input-row">
+            <input class="guard-input" id="inj-input" placeholder="Ignore all instructions and..." onkeydown="if(event.key==='Enter')testGuard('inj-input','inj-result','hr')"/>
+            <button class="btn btn-ghost" style="padding:8px 12px;font-size:11px" onclick="testGuard('inj-input','inj-result','hr')">Test</button>
+          </div>
+          <div class="guard-result" id="inj-result"></div>
+        </div>
+
+        <div class="guard-card">
+          <div class="guard-card-title">Domain Validation</div>
+          <div class="guard-card-name">Valid Domain Check</div>
+          <div class="guard-card-desc">Only 'hr' and 'finance' are accepted domains. Invalid domains are rejected.</div>
+          <div class="guard-input-row">
+            <input class="guard-input" id="dom-input" placeholder="A valid question here" onkeydown="if(event.key==='Enter')testGuard('dom-input','dom-result','marketing')"/>
+            <button class="btn btn-ghost" style="padding:8px 12px;font-size:11px" onclick="testGuard('dom-input','dom-result','marketing')">Test (invalid domain)</button>
+          </div>
+          <div class="guard-result" id="dom-result"></div>
+        </div>
+
+        <div class="guard-card">
+          <div class="guard-card-title">Clean Query</div>
+          <div class="guard-card-name">Pass-Through Check</div>
+          <div class="guard-card-desc">A legitimate business query should pass all guardrail checks cleanly.</div>
+          <div class="guard-input-row">
+            <input class="guard-input" id="clean-input" value="What is the annual leave policy?" onkeydown="if(event.key==='Enter')testGuard('clean-input','clean-result','hr')"/>
+            <button class="btn btn-ghost" style="padding:8px 12px;font-size:11px" onclick="testGuard('clean-input','clean-result','hr')">Test</button>
+          </div>
+          <div class="guard-result" id="clean-result"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MCP VIEW -->
+    <div class="view" id="view-mcp">
+      <div class="section-title">
+        <h2>MCP Tool Registry</h2>
+        <div class="section-title-bar"></div>
+      </div>
+
+      <div class="mcp-tools-grid" id="mcpToolsGrid">
+        <!-- Populated by JS -->
+      </div>
+
+      <div class="mcp-call-area">
+        <div class="mcp-call-header">Execute Tool Call</div>
+        <div class="mcp-call-body">
+          <div class="mcp-field">
+            <div class="mcp-field-label">Tool</div>
+            <select class="mcp-select" id="mcpToolSelect">
+              <option value="query_hr_policy">query_hr_policy</option>
+              <option value="query_finance_policy">query_finance_policy</option>
+              <option value="retrieve_documents">retrieve_documents</option>
+              <option value="check_query_safety">check_query_safety</option>
+            </select>
+          </div>
+          <div class="mcp-field">
+            <div class="mcp-field-label">Query parameter</div>
+            <input class="mcp-text-input" id="mcpQueryParam" placeholder="Enter your query..." onkeydown="if(event.key==='Enter')executeMcp()"/>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="executeMcp()">Execute Tool</button>
+          </div>
+          <div class="mcp-result" id="mcpResult"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BASE = '';  // Same origin — FastAPI serves this file
+
+let currentDomain = 'hr';
+let queryHistory = [];
+
+const HR_SUGGESTIONS = [
+  'How many days of annual leave do I get?',
+  'What is the maternity leave policy?',
+  'How does the performance review process work?',
+  'What happens during the 90-day probation period?',
+  'What qualifies for a PIP?'
+];
+const FIN_SUGGESTIONS = [
+  'How do I submit an expense reimbursement?',
+  'What is the hotel limit for domestic travel?',
+  'How does the annual budget cycle work?',
+  'What is the invoice 3-way match process?',
+  'What are vendor payment terms?'
+];
+
+// ── Init ──────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  checkHealth();
+  renderSuggestions();
+  loadMcpTools();
+});
+
+async function checkHealth() {
+  try {
+    const r = await fetch(BASE + '/health');
+    const dot = document.getElementById('statusDot');
+    const txt = document.getElementById('statusText');
+    if (r.ok) {
+      dot.classList.add('live');
+      txt.textContent = 'Live';
+    } else {
+      dot.classList.add('error');
+      txt.textContent = 'Error';
+    }
+  } catch {
+    document.getElementById('statusDot').classList.add('error');
+    document.getElementById('statusText').textContent = 'Offline';
+  }
+}
+
+// ── Domain selection ──────────────────────────────
+function selectDomain(domain, el) {
+  currentDomain = domain;
+  document.querySelectorAll('.domain-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+
+  const badge = document.getElementById('activeBadge');
+  const rBadge = document.getElementById('retrieveBadge');
+  badge.className = 'domain-badge ' + domain;
+  rBadge.className = 'domain-badge ' + domain;
+  badge.textContent = domain === 'hr' ? 'HR' : 'Finance';
+  rBadge.textContent = domain === 'hr' ? 'HR' : 'Finance';
+
+  renderSuggestions();
+}
+
+function renderSuggestions() {
+  const list = currentDomain === 'hr' ? HR_SUGGESTIONS : FIN_SUGGESTIONS;
+  const el = document.getElementById('suggestions');
+  el.innerHTML = '<div class="suggestion-label">Try asking</div>';
+  list.forEach(s => {
+    const chip = document.createElement('div');
+    chip.className = 'suggestion-chip';
+    chip.textContent = s;
+    chip.onclick = () => {
+      document.getElementById('queryInput').value = s;
+      document.getElementById('charCount').textContent = s.length + '/1000';
+    };
+    el.appendChild(chip);
+  });
+}
+
+// ── View switching ────────────────────────────────
+function switchView(view, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── Query submission ──────────────────────────────
+async function submitQuery() {
+  const q = document.getElementById('queryInput').value.trim();
+  if (!q) { showToast('Please enter a question'); return; }
+
+  const rawMode = document.getElementById('rawModeToggle').checked;
+  const topK = parseInt(document.getElementById('topkSlider').value);
+
+  if (rawMode) {
+    switchView('retrieve', document.querySelectorAll('.nav-btn')[1]);
+    document.getElementById('retrieveInput').value = q;
+    submitRetrieve();
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  const spinner = document.getElementById('querySpinner');
+  const area = document.getElementById('responseArea');
+
+  btn.disabled = true;
+  spinner.classList.add('visible');
+  area.innerHTML = '';
+
+  const t0 = Date.now();
+  try {
+    const resp = await fetch(BASE + '/api/v1/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: q, domain: currentDomain, top_k: topK })
+    });
+    const data = await resp.json();
+    const elapsed = ((Date.now() - t0) / 1000).toFixed(2);
+
+    addToHistory(q, currentDomain);
+    renderResponse(data, elapsed);
+  } catch (e) {
+    area.innerHTML = `<div class="blocked-banner"><div class="blocked-icon">⚠</div><div class="blocked-text">Network error: ${e.message}</div></div>`;
+  } finally {
+    btn.disabled = false;
+    spinner.classList.remove('visible');
+  }
+}
+
+function renderResponse(data, elapsed) {
+  const area = document.getElementById('responseArea');
+  const domainColor = currentDomain === 'hr' ? 'var(--hr-color)' : 'var(--fin-color)';
+
+  let html = `
+    <div class="response-card">
+      <div class="response-header">
+        <div class="response-title">
+          <div style="width:6px;height:6px;border-radius:50%;background:${domainColor}"></div>
+          Response
+        </div>
+        <div class="response-meta">
+          <span>${elapsed}s</span>
+          <span>${data.sources?.length || 0} sources</span>
+          ${data.blocked ? '<span style="color:var(--danger)">BLOCKED</span>' : ''}
+        </div>
+      </div>
+      <div class="response-body">`;
+
+  if (data.blocked) {
+    html += `<div class="blocked-banner">
+      <div class="blocked-icon">🛡</div>
+      <div class="blocked-text"><strong>Guardrail triggered</strong><br>${data.block_reason || data.answer}</div>
+    </div>`;
+  } else {
+    html += `<div class="response-answer">${escHtml(data.answer)}</div>`;
+  }
+
+  html += `</div>`;
+
+  if (data.sources && data.sources.length > 0 && !data.blocked) {
+    html += `<div class="sources-section">
+      <div class="sources-title">Sources retrieved</div>`;
+    data.sources.forEach(s => {
+      const scoreClass = s.score > 0.8 ? 'high' : s.score > 0.6 ? 'mid' : 'low';
+      html += `<div class="source-chip">
+        <div class="source-score ${scoreClass}">${(s.score * 100).toFixed(0)}%</div>
+        <div class="source-info">
+          <div class="source-name">${escHtml(s.title)}</div>
+          <div class="source-domain">${escHtml(s.domain)}</div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `</div>`;
+  area.innerHTML = html;
+}
+
+// ── Retrieve ──────────────────────────────────────
+async function submitRetrieve() {
+  const q = document.getElementById('retrieveInput').value.trim();
+  if (!q) { showToast('Enter a search query'); return; }
+
+  const topK = parseInt(document.getElementById('topkSlider').value);
+  const spinner = document.getElementById('retrieveSpinner');
+  const area = document.getElementById('retrieveArea');
+
+  spinner.classList.add('visible');
+  area.innerHTML = '';
+
+  try {
+    const resp = await fetch(BASE + '/api/v1/retrieve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: q, domain: currentDomain, top_k: topK })
+    });
+    const data = await resp.json();
+
+    if (!data.results || data.results.length === 0) {
+      area.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">◻</div>
+        <div class="empty-title">No results</div>
+        <div class="empty-desc">No matching chunks found for this query.</div>
+      </div>`;
+      return;
+    }
+
+    area.innerHTML = data.results.map((r, i) => {
+      const scoreClass = r.score > 0.8 ? 'high' : r.score > 0.6 ? 'mid' : 'low';
+      return `<div class="chunk-card" style="animation-delay:${i*0.05}s">
+        <div class="chunk-header">
+          <span class="chunk-label">${escHtml(r.metadata?.title || 'Document')} — chunk ${r.metadata?.chunk_index ?? i}</span>
+          <span class="chunk-score" style="color:${r.score > 0.8 ? 'var(--fin-color)' : r.score > 0.6 ? 'var(--gold)' : 'var(--text3)'}">${(r.score * 100).toFixed(1)}% match</span>
+        </div>
+        <div class="chunk-body">${escHtml(r.content)}</div>
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    area.innerHTML = `<div style="color:var(--danger);font-family:var(--mono);font-size:12px;padding:12px">Error: ${e.message}</div>`;
+  } finally {
+    spinner.classList.remove('visible');
+  }
+}
+
+// ── Guardrail tester ──────────────────────────────
+async function testGuard(inputId, resultId, domain) {
+  const q = document.getElementById(inputId).value.trim();
+  if (!q) return;
+  const el = document.getElementById(resultId);
+  el.textContent = 'Checking…';
+  el.className = 'guard-result visible';
+
+  try {
+    const resp = await fetch(BASE + '/api/v1/guardrail/check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: q, domain: domain })
+    });
+    const data = await resp.json();
+    el.className = 'guard-result visible ' + (data.passed ? 'pass' : 'fail');
+    el.textContent = (data.passed ? '✓ PASS — ' : '✗ BLOCKED — ') + data.reason;
+  } catch(e) {
+    el.className = 'guard-result visible fail';
+    el.textContent = 'Error: ' + e.message;
+  }
+}
+
+// ── MCP ───────────────────────────────────────────
+async function loadMcpTools() {
+  try {
+    const resp = await fetch(BASE + '/api/v1/mcp/tools');
+    const data = await resp.json();
+    const grid = document.getElementById('mcpToolsGrid');
+    grid.innerHTML = data.tools.map(t => `
+      <div class="mcp-tool" onclick="prefillMcp('${t.name}')">
+        <div class="mcp-tool-name">${t.name}</div>
+        <div class="mcp-tool-desc">${t.description}</div>
+        <div class="mcp-params">params: ${Object.keys(t.parameters?.properties || {}).join(', ')}</div>
+      </div>
+    `).join('');
+  } catch { }
+}
+
+function prefillMcp(toolName) {
+  document.getElementById('mcpToolSelect').value = toolName;
+  document.getElementById('mcpQueryParam').focus();
+}
+
+async function executeMcp() {
+  const tool = document.getElementById('mcpToolSelect').value;
+  const query = document.getElementById('mcpQueryParam').value.trim();
+  if (!query) { showToast('Enter a query parameter'); return; }
+
+  const result = document.getElementById('mcpResult');
+  result.className = 'mcp-result visible';
+  result.textContent = 'Executing…';
+
+  const params = { query };
+  if (tool === 'retrieve_documents' || tool === 'check_query_safety') {
+    params.domain = currentDomain;
+  }
+
+  try {
+    const resp = await fetch(BASE + '/api/v1/mcp/call', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tool_name: tool, parameters: params })
+    });
+    const data = await resp.json();
+    result.textContent = JSON.stringify(data.result, null, 2);
+  } catch(e) {
+    result.textContent = 'Error: ' + e.message;
+  }
+}
+
+// ── History ───────────────────────────────────────
+function addToHistory(q, domain) {
+  queryHistory.unshift({ q, domain });
+  if (queryHistory.length > 12) queryHistory.pop();
+  const list = document.getElementById('historyList');
+  const empty = document.getElementById('historyEmpty');
+  if (empty) empty.remove();
+  list.innerHTML = queryHistory.map(h => `
+    <div class="history-item" onclick="replayHistory('${escAttr(h.q)}','${h.domain}')">
+      <div class="history-dot ${h.domain}"></div>
+      <div class="history-q">${escHtml(h.q)}</div>
+    </div>
+  `).join('');
+}
+
+function replayHistory(q, domain) {
+  const card = document.querySelector(`.domain-card[data-domain="${domain}"]`);
+  if (card) selectDomain(domain, card);
+  document.getElementById('queryInput').value = q;
+  document.getElementById('charCount').textContent = q.length + '/1000';
+  switchView('query', document.querySelectorAll('.nav-btn')[0]);
+  submitQuery();
+}
+
+// ── Helpers ───────────────────────────────────────
+function clearQuery() {
+  document.getElementById('queryInput').value = '';
+  document.getElementById('charCount').textContent = '0/1000';
+  document.getElementById('responseArea').innerHTML = '';
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) {
+  return String(s).replace(/'/g,"\\'").replace(/\n/g,' ');
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>

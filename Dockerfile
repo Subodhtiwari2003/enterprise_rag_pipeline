@@ -18,6 +18,7 @@ COPY main.py ./
 COPY api/ ./api/
 COPY core/ ./core/
 COPY data/ ./data/
+COPY static/ ./static/
 
 # ChromaDB persistence directory
 RUN mkdir -p /app/chroma_db
