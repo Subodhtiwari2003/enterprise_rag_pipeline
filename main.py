@@ -53,11 +53,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 def root():
-    return {
-        "message": "Enterprise RAG Pipeline is running",
-        "docs": "/docs",
-        "health": "/health",
-    }
+    return FileResponse("static/index.html")
 
 
 @app.get("/health")
